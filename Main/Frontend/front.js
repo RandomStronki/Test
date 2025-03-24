@@ -1,9 +1,9 @@
 const board = document.getElementById("board");
-let boardState = ["", "", "", "", "", "", "", "", ""];
+let boardState = Array(9).fill("");
 
 function renderBoard() {
     board.innerHTML = "";
-    boardState.forEach((value, index) => {
+    boardState.forEach(({ index, value }) => {
         const button = document.createElement("button");
         button.classList.add("cell");
         button.textContent = value;
@@ -19,7 +19,9 @@ async function makeMove(index) {
             headers: { "Content-Type": "application/json" }
         });
         if (response.ok) {
-            updateBoard();
+            const data = await response.json();
+            boardState = data;
+            renderBoard();
         }
     } catch (error) {
         console.error("Błąd wysyłania ruchu:", error);
