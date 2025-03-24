@@ -55,8 +55,8 @@ func PostGame(w http.ResponseWriter, r *http.Request) {
 
 func GetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-
 		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(Board)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
