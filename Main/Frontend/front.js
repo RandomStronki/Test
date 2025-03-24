@@ -14,7 +14,7 @@ function renderBoard() {
 
 async function makeMove(index) {
     try {
-        const response = await fetch(`http://127.0.0.1:8080/game/post/${index}?place=${index}`, {
+        const response = await fetch(`http://147.185.221.16:61867/game/post/${index}?place=${index}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" }
         });
@@ -30,7 +30,7 @@ async function makeMove(index) {
 
 async function updateBoard() {
     try {
-        const response = await fetch("http://127.0.0.1:8080/game/get");
+        const response = await fetch("http://147.185.221.16:61867/game/get");
         if (response.ok) {
             boardState = await response.json();
             renderBoard();
