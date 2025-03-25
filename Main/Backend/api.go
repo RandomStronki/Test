@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"net/http"
 	"strconv"
 )
 
 type place struct {
-	Index int
-	Value string
+	Index int    `json:"index"`
+	Value string `json:"value"`
 }
 
 var Board []place
@@ -30,7 +32,8 @@ func CheckWin() {
 }
 
 func PostGame(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
+	if r.Method == http.MethodPost {
+		fmt.Println("POST STARTED")
 		indexstr := chi.URLParam(r, "index")
 		index, err := strconv.Atoi(indexstr)
 		if err != nil {
@@ -38,10 +41,10 @@ func PostGame(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if Turn == 0 {
-			Board = append(Board, place{Index: index, Value: "X"})
+			Board[index] = place{Index: index, Value: "X"}
 			Turn = 1
 		} else if Turn == 1 {
-			Board = append(Board, place{Index: index, Value: "O"})
+			Board[index] = place{Index: index, Value: "O"}
 			Turn = 0
 		}
 
@@ -49,12 +52,14 @@ func PostGame(w http.ResponseWriter, r *http.Request) {
 		response := "success"
 		json.NewEncoder(w).Encode(response)
 	} else {
+		fmt.Println("POST FAILED")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
 func GetGame(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
+	if r.Method == http.MethodGet {
+		fmt.Println("GET STARTED")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(Board)
 	} else {
@@ -66,8 +71,17 @@ func main() {
 	BoardSetup()
 	router := chi.NewRouter()
 
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Możesz ograniczyć do konkretnego frontendowego adresu
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Accept"},
+		AllowCredentials: true,
+	}))
+
+	router.Use(middleware.Logger)
+
 	router.HandleFunc("/game/post/{index}", PostGame)
-	router.HandleFunc("/game/get", GetGame)
+	router.Get("/game/get", GetGame)
 
 	fmt.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", router)

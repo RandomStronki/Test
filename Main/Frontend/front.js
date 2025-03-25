@@ -1,5 +1,5 @@
 const board = document.getElementById("board");
-let boardState = Array(9).fill("");
+let boardState = Array.from({ length: 9 }, (_, i) => ({ index: i, value: "" }));
 
 function renderBoard() {
     board.innerHTML = "";
@@ -14,15 +14,24 @@ function renderBoard() {
 
 async function makeMove(index) {
     try {
-        const response = await fetch(`http://147.185.221.16:61867/game/post/${index}?place=${index}`, {
+        console.log(`Wysyłanie POST na /game/post/${index}`);
+        const response = await fetch(`http://127.0.0.1:8080/game/post/${index}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" }
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ index })
         });
-        if (response.ok) {
-            const data = await response.json();
-            boardState = data;
-            renderBoard();
+
+        console.log("Response status:", response.status);
+        if (!response.ok) {
+            throw new Error(`Serwer zwrócił błąd: ${response.status}`);
         }
+
+        const data = await response.json();
+        boardState = data;
+        renderBoard();
     } catch (error) {
         console.error("Błąd wysyłania ruchu:", error);
     }
@@ -30,7 +39,7 @@ async function makeMove(index) {
 
 async function updateBoard() {
     try {
-        const response = await fetch("http://147.185.221.16:61867/game/get");
+        const response = await fetch("http://127.0.0.1:8080/game/get");
         if (response.ok) {
             boardState = await response.json();
             renderBoard();
